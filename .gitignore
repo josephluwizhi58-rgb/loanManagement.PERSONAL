@@ -1,1 +1,4 @@
 /target/
+/loan-management.dat
+/.idea/
+*.iml
