@@ -16,7 +16,13 @@ public class FilePersistenceManager {
 	public void save(List<Customer> customers, List<LoanType> loanTypes,
 			List<LoanApplication> applications, List<Loan> loans,
 			List<Repayment> repayments) throws IOException {
-		PersistentState state = new PersistentState(customers, loanTypes, applications, loans, repayments);
+		save(customers, loanTypes, applications, loans, repayments, new SystemSettings());
+	}
+
+	public void save(List<Customer> customers, List<LoanType> loanTypes,
+			List<LoanApplication> applications, List<Loan> loans,
+			List<Repayment> repayments, SystemSettings settings) throws IOException {
+		PersistentState state = new PersistentState(customers, loanTypes, applications, loans, repayments, settings);
 		Path temporary = Path.of(file.toString() + ".tmp");
 		try (ObjectOutputStream output = new ObjectOutputStream(
 				new FileOutputStream(temporary.toFile()))) {
@@ -47,15 +53,23 @@ public class FilePersistenceManager {
 		private final List<LoanApplication> applications;
 		private final List<Loan> loans;
 		private final List<Repayment> repayments;
+		private final SystemSettings settings;
 
 		public PersistentState(List<Customer> customers, List<LoanType> loanTypes,
 				List<LoanApplication> applications, List<Loan> loans,
 				List<Repayment> repayments) {
+			this(customers, loanTypes, applications, loans, repayments, new SystemSettings());
+		}
+
+		public PersistentState(List<Customer> customers, List<LoanType> loanTypes,
+				List<LoanApplication> applications, List<Loan> loans,
+				List<Repayment> repayments, SystemSettings settings) {
 			this.customers = customers;
 			this.loanTypes = loanTypes;
 			this.applications = applications;
 			this.loans = loans;
 			this.repayments = repayments;
+			this.settings = settings == null ? new SystemSettings() : settings;
 		}
 
 		public List<Customer> getCustomers() { return customers; }
@@ -63,5 +77,6 @@ public class FilePersistenceManager {
 		public List<LoanApplication> getApplications() { return applications; }
 		public List<Loan> getLoans() { return loans; }
 		public List<Repayment> getRepayments() { return repayments; }
+		public SystemSettings getSettings() { return settings; }
 	}
 }

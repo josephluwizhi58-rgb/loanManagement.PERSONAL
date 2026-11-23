@@ -2,3 +2,5 @@
 /loan-management.dat
 /.idea/
 *.iml
+*.csv
+*.pdf

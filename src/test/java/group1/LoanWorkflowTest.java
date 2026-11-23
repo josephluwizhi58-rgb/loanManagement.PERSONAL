@@ -66,4 +66,21 @@ class LoanWorkflowTest {
 				loan.getLoanId(), loan.getOutstandingBalance() + 1,
 				PaymentMethod.CASH, "REF001"));
 	}
+
+	@Test
+	void systemSettingsControlEligibilityAndLateFees() {
+		assertThrows(IllegalArgumentException.class,
+				() -> loans.getSettings().setAffordabilityPercentage(0));
+		assertThrows(IllegalArgumentException.class,
+				() -> loans.getSettings().setMaximumActiveLoans(0));
+		assertThrows(IllegalArgumentException.class,
+				() -> loans.getSettings().setLateFeePercentage(-0.01));
+
+		loans.getSettings().setAffordabilityPercentage(0.50);
+		loans.getSettings().setMaximumActiveLoans(5);
+		loans.getSettings().setLateFeePercentage(0.02);
+		assertEquals(0.50, loans.getSettings().getAffordabilityPercentage(), 0.001);
+		assertEquals(5, loans.getSettings().getMaximumActiveLoans());
+		assertEquals(0.02, loans.getSettings().getLateFeePercentage(), 0.001);
+	}
 }

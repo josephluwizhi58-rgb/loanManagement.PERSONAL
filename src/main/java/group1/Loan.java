@@ -21,6 +21,7 @@ public abstract class Loan implements Serializable {
 	protected double totalPayable;
 	protected double amountPaid;
 	protected double outstandingBalance;
+	protected double lateFees;
 	protected LoanStatus status;
 	protected final List<Repayment> repayments = new ArrayList<>();
 	protected final List<RepaymentSchedule> schedule = new ArrayList<>();
@@ -71,7 +72,7 @@ public abstract class Loan implements Serializable {
 
 	protected void recalculate() {
 		totalInterest = calculateInterest();
-		totalPayable = principal + totalInterest;
+		totalPayable = principal + totalInterest + lateFees;
 		outstandingBalance = totalPayable - amountPaid;
 	}
 
@@ -87,6 +88,18 @@ public abstract class Loan implements Serializable {
 		if (outstandingBalance <= 0.005) {
 			outstandingBalance = 0;
 			status = LoanStatus.PAID;
+		}
+	}
+
+	public void applyLateFees(double feePercentage) {
+		if (feePercentage <= 0 || status == LoanStatus.PAID
+				|| status == LoanStatus.CANCELLED) {
+			return;
+		}
+		double fee = Math.round(outstandingBalance * feePercentage * 100.0) / 100.0;
+		if (fee > 0) {
+			lateFees += fee;
+			recalculate();
 		}
 	}
 
@@ -126,6 +139,7 @@ public abstract class Loan implements Serializable {
 	public double getTotalPayable() { return totalPayable; }
 	public double getAmountPaid() { return amountPaid; }
 	public double getOutstandingBalance() { return outstandingBalance; }
+	public double getLateFees() { return lateFees; }
 	public LoanStatus getStatus() { return status; }
 	public List<Repayment> getRepayments() { return new ArrayList<>(repayments); }
 	public List<RepaymentSchedule> getSchedule() { return new ArrayList<>(schedule); }

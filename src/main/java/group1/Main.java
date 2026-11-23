@@ -8,6 +8,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import java.util.List;
 import java.util.Scanner;
+import java.nio.file.Path;
 
 public class Main {
 	private static final Scanner scanner = new Scanner(System.in);
@@ -50,6 +51,8 @@ public class Main {
 					case "9" -> viewCustomerLoans();
 					case "10" -> viewOverdue();
 					case "11" -> showReports();
+					case "12" -> manageSettings();
+					case "13" -> exportReports();
 					case "0" -> {
 						saveData();
 						System.out.println("Goodbye.");
@@ -90,6 +93,14 @@ public class Main {
 			loanTypeManager.loadLoanTypes(state.getLoanTypes());
 			loanManager.loadState(state.getApplications(), state.getLoans());
 			paymentManager.loadRepayments(state.getRepayments());
+			SystemSettings settings = state.getSettings();
+			if (settings != null) {
+				SystemSettings current = loanManager.getSettings();
+				current.setAffordabilityPercentage(settings.getAffordabilityPercentage());
+				current.setMaximumActiveLoans(settings.getMaximumActiveLoans());
+				current.setLateFeePercentage(settings.getLateFeePercentage());
+				current.setLateFeesEnabled(settings.isLateFeesEnabled());
+			}
 			System.out.println("Saved data loaded.");
 		} catch (Exception e) {
 			System.out.println("Could not load saved data; starting with sample data.");
@@ -104,7 +115,8 @@ public class Main {
 					loanTypeManager.listLoanTypes(),
 					loanManager.getApplications(),
 					loanManager.getLoans(),
-					paymentManager.getRepayments());
+					paymentManager.getRepayments(),
+					loanManager.getSettings());
 			System.out.println("Data saved.");
 		} catch (Exception e) {
 			System.out.println("Could not save data: " + e.getMessage());
@@ -126,6 +138,8 @@ public class Main {
 		System.out.println("9. View Customer Loans");
 		System.out.println("10. View Overdue Loans");
 		System.out.println("11. Loan and Financial Reports");
+		System.out.println("12. System Settings");
+		System.out.println("13. Export CSV Reports");
 		System.out.println("0. Exit");
 		System.out.print("Enter your choice: ");
 	}
@@ -527,6 +541,72 @@ public class Main {
 			}
 		}
 	}
+
+		private static void manageSettings() {
+			try {
+				SystemSettings settings = loanManager.getSettings();
+				System.out.print("Affordability ratio (0-1) [" +
+						settings.getAffordabilityPercentage() + "]: ");
+				String affordability = scanner.nextLine().trim();
+				if (!affordability.isEmpty()) {
+					settings.setAffordabilityPercentage(Double.parseDouble(affordability));
+				}
+				System.out.print("Maximum active loans [" +
+						settings.getMaximumActiveLoans() + "]: ");
+				String maximum = scanner.nextLine().trim();
+				if (!maximum.isEmpty()) {
+					settings.setMaximumActiveLoans(Integer.parseInt(maximum));
+				}
+				System.out.print("Late fee percentage [" +
+						settings.getLateFeePercentage() + "]: ");
+				String lateFee = scanner.nextLine().trim();
+				if (!lateFee.isEmpty()) {
+					settings.setLateFeePercentage(Double.parseDouble(lateFee));
+				}
+				System.out.print("Enable late fees (true/false) [" +
+						settings.isLateFeesEnabled() + "]: ");
+				String enabled = scanner.nextLine().trim();
+				if (!enabled.isEmpty()) {
+					settings.setLateFeesEnabled(Boolean.parseBoolean(enabled));
+				}
+				System.out.println("System settings updated.");
+			} catch (Exception e) {
+				System.out.println("Error: " + e.getMessage());
+			}
+		}
+
+		private static void exportReports() {
+			try {
+				CsvReportExporter exporter = new CsvReportExporter();
+				System.out.println("1. Customer report");
+				System.out.println("2. Loan report");
+				System.out.println("3. Customer report PDF");
+				System.out.println("4. Loan report PDF");
+				System.out.print("Choice: ");
+				String choice = scanner.nextLine().trim();
+				if ("1".equals(choice)) {
+					Path path = Path.of("customers.csv");
+					exporter.exportCustomers(path, customerManager.listCustomers());
+					System.out.println("Exported to " + path.toAbsolutePath());
+				} else if ("2".equals(choice)) {
+					Path path = Path.of("loans.csv");
+					exporter.exportLoans(path, loanManager.getLoans());
+					System.out.println("Exported to " + path.toAbsolutePath());
+				} else if ("3".equals(choice)) {
+					PdfReportExporter pdfExporter = new PdfReportExporter();
+					pdfExporter.exportCustomers("customers.pdf", customerManager.listCustomers());
+					System.out.println("Exported to " + Path.of("customers.pdf").toAbsolutePath());
+				} else if ("4".equals(choice)) {
+					PdfReportExporter pdfExporter = new PdfReportExporter();
+					pdfExporter.exportLoans("loans.pdf", loanManager.getLoans());
+					System.out.println("Exported to " + Path.of("loans.pdf").toAbsolutePath());
+			 } else {
+					System.out.println("Invalid choice.");
+				}
+			} catch (Exception e) {
+				System.out.println("Error: " + e.getMessage());
+			}
+		}
 
 	private static double readDouble() throws LoanManagementException {
 		try {

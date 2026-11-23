@@ -15,8 +15,7 @@ public class LoanManager {
 	private final LoanTypeManager loanTypeManager;
 	private int applicationSequence = 1;
 	private int loanSequence = 1;
-	private double affordabilityPercentage = 0.40;
-	private int maximumActiveLoans = 3;
+	private final SystemSettings settings = new SystemSettings();
 
 	public LoanManager(CustomerManager customerManager, LoanTypeManager loanTypeManager) {
 		this.customerManager = customerManager;
@@ -52,7 +51,7 @@ public class LoanManager {
 		SimpleInterestCalculator calculator = new SimpleInterestCalculator();
 		double interest = calculator.calculateInterest(amount, loanType.getInterestRate(), period);
 		double monthlyPayment = (amount + interest) / period;
-		if (monthlyPayment > customer.getMonthlyIncome() * affordabilityPercentage) {
+		if (monthlyPayment > customer.getMonthlyIncome() * settings.getAffordabilityPercentage()) {
 			throw new InvalidLoanApplicationException("Insufficient income for the requested loan");
 		}
 
@@ -65,7 +64,7 @@ public class LoanManager {
 				throw new InvalidLoanApplicationException("Customer has an overdue loan");
 			}
 		}
-		if (activeLoans >= maximumActiveLoans) {
+		if (activeLoans >= settings.getMaximumActiveLoans()) {
 			throw new InvalidLoanApplicationException("Customer exceeds the maximum number of active loans");
 		}
 
@@ -188,6 +187,9 @@ public class LoanManager {
 		for (Loan loan : loans) {
 			loan.updateOverdueStatus(today);
 			if (loan.getStatus() == LoanStatus.OVERDUE) {
+				if (settings.isLateFeesEnabled()) {
+					loan.applyLateFees(settings.getLateFeePercentage());
+				}
 				overdue.add(loan);
 			}
 		}
@@ -214,4 +216,6 @@ public class LoanManager {
 	public static double roundMoney(double amount) {
 		return Math.round(amount * 100.0) / 100.0;
 	}
+
+	public SystemSettings getSettings() { return settings; }
 }

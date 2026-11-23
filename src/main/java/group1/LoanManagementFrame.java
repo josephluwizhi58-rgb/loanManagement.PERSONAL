@@ -5,6 +5,8 @@ import group1.service.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import java.io.File;
 import java.awt.*;
 import java.util.List;
 
@@ -18,6 +20,12 @@ public class LoanManagementFrame extends JFrame {
 	private static final Color RED = new Color(220, 38, 38);
 	private static final Color BACKGROUND = new Color(244, 247, 252);
 	private static final Color SURFACE = Color.WHITE;
+	private static final Color GLASS = new Color(255, 255, 255, 205);
+	private static final Color GLASS_BORDER = new Color(255, 255, 255, 190);
+	private static final Color TAB_GREEN = new Color(34, 197, 94);
+	private static final Color TAB_GREEN_DARK = new Color(21, 128, 61);
+	private static final Color GOLD = new Color(212, 175, 55);
+	private static final Color GOLD_LIGHT = new Color(255, 215, 100);
 	private static final Font UI_FONT = new Font("Segoe UI", Font.PLAIN, 14);
 	private static final Font UI_BOLD = new Font("Segoe UI", Font.BOLD, 14);
 
@@ -45,6 +53,7 @@ public class LoanManagementFrame extends JFrame {
 		setMinimumSize(new Dimension(1100, 720));
 		setLocationRelativeTo(null);
 		setLayout(new BorderLayout());
+		setContentPane(createGlassBackground());
 		getContentPane().setBackground(BACKGROUND);
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -56,9 +65,9 @@ public class LoanManagementFrame extends JFrame {
 		UIManager.put("Panel.background", BACKGROUND);
 		UIManager.put("Label.foreground", INK);
 		UIManager.put("Button.foreground", INK);
-		UIManager.put("TabbedPane.foreground", INK);
+		UIManager.put("TabbedPane.foreground", TAB_GREEN);
 		UIManager.put("Table.foreground", INK);
-		UIManager.put("TableHeader.foreground", Color.WHITE);
+		UIManager.put("TableHeader.foreground", GOLD_LIGHT);
 		UIManager.put("TableHeader.background", INK);
 		UIManager.put("TextField.foreground", INK);
 		UIManager.put("TextArea.foreground", INK);
@@ -70,29 +79,85 @@ public class LoanManagementFrame extends JFrame {
 		add(createHeader(), BorderLayout.NORTH);
 		JTabbedPane tabs = new JTabbedPane();
 		tabs.setFont(UI_BOLD);
-		tabs.setBackground(SURFACE);
-		tabs.setForeground(INK);
+		tabs.setOpaque(false);
+		tabs.setBackground(new Color(255, 255, 255, 120));
+		tabs.setForeground(TAB_GREEN);
 		tabs.setBorder(new EmptyBorder(4, 12, 0, 12));
-		tabs.addTab("Dashboard", createDashboard());
-		tabs.addTab("Customers", createCustomersPanel());
-		tabs.addTab("Loan Types", createLoanTypesPanel());
-		tabs.addTab("Applications", createApplicationsPanel());
-		tabs.addTab("Loans & Repayments", createLoansPanel());
+		addGlassTab(tabs, "Dashboard", createDashboard());
+		addGlassTab(tabs, "Customers", createCustomersPanel());
+		addGlassTab(tabs, "Loan Types", createLoanTypesPanel());
+		addGlassTab(tabs, "Applications", createApplicationsPanel());
+		addGlassTab(tabs, "Loans & Repayments", createLoansPanel());
 		add(tabs, BorderLayout.CENTER);
 		makeTextVisible(this);
 		updateAllTables();
 	}
 
+	private JPanel createGlassBackground() {
+		return new JPanel(new BorderLayout()) {
+			@Override
+			protected void paintComponent(Graphics graphics) {
+				super.paintComponent(graphics);
+				Graphics2D g = (Graphics2D) graphics.create();
+				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g.setPaint(new GradientPaint(0, 0, new Color(222, 245, 232),
+						getWidth(), getHeight(), new Color(226, 238, 250)));
+				g.fillRect(0, 0, getWidth(), getHeight());
+				g.setColor(new Color(74, 222, 128, 28));
+				g.fillOval(-150, -180, 500, 500);
+				g.setColor(new Color(96, 165, 250, 22));
+				g.fillOval(getWidth() - 420, getHeight() - 380, 520, 520);
+				g.dispose();
+			}
+		};
+	}
+
+	private void addGlassTab(JTabbedPane tabs, String title, JComponent content) {
+		tabs.addTab(title, content);
+		int index = tabs.getTabCount() - 1;
+		JPanel tabTitle = new JPanel(new BorderLayout());
+		tabTitle.setOpaque(false);
+		tabTitle.setBorder(new EmptyBorder(6, 10, 6, 10));
+		JLabel label = new JLabel(title);
+		label.setFont(UI_BOLD);
+		label.setForeground(TAB_GREEN_DARK);
+		tabTitle.add(label, BorderLayout.CENTER);
+		tabs.setTabComponentAt(index, tabTitle);
+	}
+
+	private static class GlassPanel extends JPanel {
+		private final Color fill;
+		private final Color border;
+
+		private GlassPanel(LayoutManager layout, Color fill, Color border) {
+			super(layout);
+			this.fill = fill;
+			this.border = border;
+			setOpaque(false);
+		}
+
+		@Override
+		protected void paintComponent(Graphics graphics) {
+			Graphics2D g = (Graphics2D) graphics.create();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setColor(fill);
+			g.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+			g.setColor(border);
+			g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 18, 18);
+			g.dispose();
+		}
+	}
+
 	private JPanel createHeader() {
-		JPanel header = new JPanel(new BorderLayout());
-		header.setBackground(INK);
+		JPanel header = new GlassPanel(new BorderLayout(),
+				new Color(22, 33, 62, 235), new Color(255, 255, 255, 70));
 		header.setBorder(new EmptyBorder(18, 26, 18, 26));
 		JLabel title = new JLabel("Loan Management System");
 		title.setFont(new Font("Segoe UI", Font.BOLD, 22));
-		title.setForeground(Color.WHITE);
+		title.setForeground(GOLD_LIGHT);
 		JLabel subtitle = new JLabel("NRC 2026-NRC-1  /  Lending Operations");
 		subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-		subtitle.setForeground(new Color(191, 205, 235));
+		subtitle.setForeground(GOLD);
 		JPanel labels = new JPanel(new GridLayout(2, 1));
 		labels.setOpaque(false);
 		labels.add(title);
@@ -101,14 +166,25 @@ public class LoanManagementFrame extends JFrame {
 		JButton save = new JButton("Save changes");
 		styleButton(save, AMBER);
 		save.addActionListener(e -> saveData());
-		header.add(save, BorderLayout.EAST);
+		JButton settings = new JButton("Settings");
+		styleButton(settings, BLUE);
+		settings.addActionListener(e -> showSettingsDialog());
+		JButton export = new JButton("Export CSV");
+		styleButton(export, TEAL_DARK);
+		export.addActionListener(e -> showExportDialog());
+		JPanel headerActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+		headerActions.setOpaque(false);
+		headerActions.add(settings);
+		headerActions.add(export);
+		headerActions.add(save);
+		header.add(headerActions, BorderLayout.EAST);
 		return header;
 	}
 
 	private JPanel createDashboard() {
-		JPanel panel = new JPanel(new BorderLayout(15, 15));
+		JPanel panel = new GlassPanel(new BorderLayout(15, 15), GLASS, GLASS_BORDER);
 		panel.setBorder(new EmptyBorder(22, 22, 22, 22));
-		panel.setBackground(BACKGROUND);
+		panel.setOpaque(false);
 
 		JPanel cards = new JPanel(new GridLayout(1, 4, 15, 15));
 		cards.setOpaque(false);
@@ -132,22 +208,33 @@ public class LoanManagementFrame extends JFrame {
 	}
 
 	private JPanel createCustomersPanel() {
-		JPanel panel = new JPanel(new BorderLayout(10, 10));
+		JPanel panel = new GlassPanel(new BorderLayout(10, 10), GLASS, GLASS_BORDER);
 		panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-		panel.setBackground(BACKGROUND);
+		panel.setOpaque(false);
 		customerModel = new DefaultTableModel(
 				new Object[]{"Customer ID", "Name", "National ID", "Phone", "Income", "Status"}, 0) {
 			public boolean isCellEditable(int r, int c) { return false; }
 		};
 		JTable table = professionalTable(customerModel);
+		TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(customerModel);
+		table.setRowSorter(sorter);
 		panel.add(new JScrollPane(table), BorderLayout.CENTER);
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JTextField search = new JTextField(18);
+		search.putClientProperty("JTextField.placeholderText", "Search customers");
+		search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+			public void insertUpdate(javax.swing.event.DocumentEvent e) { filterTable(sorter, search.getText()); }
+			public void removeUpdate(javax.swing.event.DocumentEvent e) { filterTable(sorter, search.getText()); }
+			public void changedUpdate(javax.swing.event.DocumentEvent e) { filterTable(sorter, search.getText()); }
+		});
 		JButton add = new JButton("Register Customer");
 		JButton deactivate = new JButton("Deactivate");
 		styleButton(add, TEAL_DARK);
 		styleButton(deactivate, RED);
 		add.addActionListener(e -> showAddCustomerDialog());
 		deactivate.addActionListener(e -> deactivateSelected(table, customerManager));
+		buttons.add(new JLabel("Search"));
+		buttons.add(search);
 		buttons.add(add);
 		buttons.add(deactivate);
 		panel.add(buttons, BorderLayout.NORTH);
@@ -155,9 +242,9 @@ public class LoanManagementFrame extends JFrame {
 	}
 
 	private JPanel createLoanTypesPanel() {
-		JPanel panel = new JPanel(new BorderLayout(10, 10));
+		JPanel panel = new GlassPanel(new BorderLayout(10, 10), GLASS, GLASS_BORDER);
 		panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-		panel.setBackground(BACKGROUND);
+		panel.setOpaque(false);
 		loanTypeModel = new DefaultTableModel(
 				new Object[]{"Type ID", "Name", "Minimum", "Maximum", "Rate", "Period", "Status"}, 0) {
 			public boolean isCellEditable(int r, int c) { return false; }
@@ -174,9 +261,9 @@ public class LoanManagementFrame extends JFrame {
 	}
 
 	private JPanel createApplicationsPanel() {
-		JPanel panel = new JPanel(new BorderLayout(10, 10));
+		JPanel panel = new GlassPanel(new BorderLayout(10, 10), GLASS, GLASS_BORDER);
 		panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-		panel.setBackground(BACKGROUND);
+		panel.setOpaque(false);
 		applicationModel = new DefaultTableModel(
 				new Object[]{"Application", "Customer", "Loan Type", "Amount", "Period", "Status"}, 0) {
 			public boolean isCellEditable(int r, int c) { return false; }
@@ -201,14 +288,16 @@ public class LoanManagementFrame extends JFrame {
 	}
 
 	private JPanel createLoansPanel() {
-		JPanel panel = new JPanel(new BorderLayout(10, 10));
+		JPanel panel = new GlassPanel(new BorderLayout(10, 10), GLASS, GLASS_BORDER);
 		panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-		panel.setBackground(BACKGROUND);
+		panel.setOpaque(false);
 		loanModel = new DefaultTableModel(
-				new Object[]{"Loan ID", "Customer", "Type", "Principal", "Paid", "Outstanding", "Status"}, 0) {
+				new Object[]{"Loan Ref", "Customer", "Loan Type", "Principal", "Paid", "Outstanding", "Status"}, 0) {
 			public boolean isCellEditable(int r, int c) { return false; }
 		};
 		JTable loans = professionalTable(loanModel);
+		TableRowSorter<DefaultTableModel> loanSorter = new TableRowSorter<>(loanModel);
+		loans.setRowSorter(loanSorter);
 
 		scheduleModel = new DefaultTableModel(
 				new Object[]{"#", "Due Date", "Amount Due", "Paid", "Balance", "Status"}, 0) {
@@ -227,17 +316,26 @@ public class LoanManagementFrame extends JFrame {
 		split.setResizeWeight(0.58);
 		panel.add(split, BorderLayout.CENTER);
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JTextField search = new JTextField(18);
+		search.putClientProperty("JTextField.placeholderText", "Search loans");
+		search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+			public void insertUpdate(javax.swing.event.DocumentEvent e) { filterTable(loanSorter, search.getText()); }
+			public void removeUpdate(javax.swing.event.DocumentEvent e) { filterTable(loanSorter, search.getText()); }
+			public void changedUpdate(javax.swing.event.DocumentEvent e) { filterTable(loanSorter, search.getText()); }
+		});
 		JButton repay = new JButton("Record Repayment");
 		styleButton(repay, TEAL_DARK);
 		repay.addActionListener(e -> showRepaymentDialog());
+		buttons.add(new JLabel("Search"));
+		buttons.add(search);
 		buttons.add(repay);
 		panel.add(buttons, BorderLayout.NORTH);
 		return panel;
 	}
 
 	private JPanel createMetricCard(JLabel value, String label, Color accent) {
-		JPanel card = new JPanel(new BorderLayout());
-		card.setBackground(SURFACE);
+		JPanel card = new GlassPanel(new BorderLayout(),
+				new Color(255, 255, 255, 190), new Color(255, 255, 255, 220));
 		card.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createMatteBorder(0, 5, 0, 0, accent),
 				new EmptyBorder(18, 18, 18, 18)));
@@ -266,14 +364,14 @@ public class LoanManagementFrame extends JFrame {
 
 	private void styleButton(JButton button, Color color) {
 		button.setBackground(color);
-		button.setForeground(Color.WHITE);
+		button.setForeground(GOLD_LIGHT);
 		button.setOpaque(true);
 		button.setContentAreaFilled(true);
 		button.setFont(new Font("Segoe UI", Font.BOLD, 13));
 		button.setFocusPainted(false);
 		button.setBorder(BorderFactory.createEmptyBorder(9, 16, 9, 16));
 		button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		button.setForeground(Color.WHITE);
+		button.setForeground(GOLD_LIGHT);
 	}
 
 	private JTable professionalTable(DefaultTableModel model) {
@@ -287,17 +385,27 @@ public class LoanManagementFrame extends JFrame {
 		table.setShowVerticalLines(false);
 		table.getTableHeader().setFont(UI_BOLD);
 		table.getTableHeader().setBackground(INK);
-		table.getTableHeader().setForeground(Color.WHITE);
+		table.getTableHeader().setForeground(GOLD_LIGHT);
 		table.getTableHeader().setPreferredSize(new Dimension(0, 34));
 		return table;
+	}
+
+	private void filterTable(TableRowSorter<DefaultTableModel> sorter, String text) {
+		if (text == null || text.trim().isEmpty()) {
+			sorter.setRowFilter(null);
+		} else {
+			sorter.setRowFilter(RowFilter.regexFilter("(?i)" +
+					java.util.regex.Pattern.quote(text.trim())));
+		}
 	}
 
 	private void makeTextVisible(Container container) {
 		for (Component component : container.getComponents()) {
 			if (component instanceof JLabel label) {
-				if (label.getForeground().equals(new Color(120, 130, 126))
+				if (label.getForeground().equals(Color.WHITE)
+						|| label.getForeground().equals(new Color(120, 130, 126))
 						|| label.getForeground().equals(new Color(191, 205, 235))) {
-					label.setForeground(INK);
+					label.setForeground(GOLD);
 				}
 			} else if (component instanceof JTextField field) {
 				field.setForeground(INK);
@@ -307,11 +415,12 @@ public class LoanManagementFrame extends JFrame {
 			} else if (component instanceof JTable table) {
 				table.setForeground(INK);
 				table.setFont(UI_FONT);
-				table.getTableHeader().setForeground(Color.WHITE);
+				table.getTableHeader().setForeground(GOLD_LIGHT);
 				table.getTableHeader().setBackground(INK);
 			} else if (component instanceof JTabbedPane tabs) {
-				tabs.setForeground(INK);
+				tabs.setForeground(TAB_GREEN);
 				tabs.setFont(UI_BOLD);
+				tabs.setOpaque(false);
 			}
 			if (component instanceof Container child) {
 				makeTextVisible(child);
@@ -345,6 +454,14 @@ public class LoanManagementFrame extends JFrame {
 			loanTypeManager.loadLoanTypes(state.getLoanTypes());
 			loanManager.loadState(state.getApplications(), state.getLoans());
 			paymentManager.loadRepayments(state.getRepayments());
+			SystemSettings saved = state.getSettings();
+			if (saved != null) {
+				SystemSettings current = loanManager.getSettings();
+				current.setAffordabilityPercentage(saved.getAffordabilityPercentage());
+				current.setMaximumActiveLoans(saved.getMaximumActiveLoans());
+				current.setLateFeePercentage(saved.getLateFeePercentage());
+				current.setLateFeesEnabled(saved.isLateFeesEnabled());
+			}
 		} catch (Exception e) {
 			seedData();
 		}
@@ -354,7 +471,7 @@ public class LoanManagementFrame extends JFrame {
 		try {
 			persistence.save(customerManager.listCustomers(), loanTypeManager.listLoanTypes(),
 					loanManager.getApplications(), loanManager.getLoans(),
-					paymentManager.getRepayments());
+					paymentManager.getRepayments(), loanManager.getSettings());
 			JOptionPane.showMessageDialog(this, "Data saved successfully.", "Saved",
 					JOptionPane.INFORMATION_MESSAGE);
 		} catch (Exception e) {
@@ -404,7 +521,8 @@ public class LoanManagementFrame extends JFrame {
 			outstanding += loan.getOutstandingBalance();
 			if (loan.getStatus() == LoanStatus.ACTIVE) active++;
 			loanModel.addRow(new Object[]{
-					loan.getLoanId(), loan.getCustomer().getCustomerId(),
+					loan.getLoanId(), loan.getCustomer().getFirstName() + " "
+							+ loan.getCustomer().getLastName(),
 					loan.getLoanType().getName(),
 					String.format("MWK %.2f", loan.getPrincipal()),
 					String.format("MWK %.2f", loan.getAmountPaid()),
@@ -518,7 +636,9 @@ public class LoanManagementFrame extends JFrame {
 			Loan loan = loanManager.approveLoan(id.trim());
 			updateAllTables();
 			JOptionPane.showMessageDialog(this,
-					"Loan " + loan.getLoanId() + " approved.");
+					"Loan approved for " + loan.getCustomer().getFirstName() + " "
+							+ loan.getCustomer().getLastName() + ".\nLoan reference: "
+							+ loan.getLoanId());
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Approval Error",
 					JOptionPane.ERROR_MESSAGE);
@@ -541,29 +661,47 @@ public class LoanManagementFrame extends JFrame {
 	}
 
 	private void showRepaymentDialog() {
-		String loanId = JOptionPane.showInputDialog(this, "Loan ID:");
-		if (loanId == null || loanId.trim().isEmpty()) return;
+		List<Loan> availableLoans = loanManager.getLoans().stream()
+				.filter(loan -> loan.getOutstandingBalance() > 0)
+				.toList();
+		if (availableLoans.isEmpty()) {
+			JOptionPane.showMessageDialog(this, "There are no loans with an outstanding balance.");
+			return;
+		}
+		JComboBox<String> loanChoice = new JComboBox<>(availableLoans.stream()
+				.map(loan -> loan.getCustomer().getFirstName() + " "
+						+ loan.getCustomer().getLastName() + " | "
+						+ loan.getLoanType().getName() + " | MWK "
+						+ String.format("%.2f", loan.getOutstandingBalance())
+						+ " outstanding | Ref " + loan.getLoanId())
+				.toArray(String[]::new));
+		JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
+		addField(form, "Choose borrower and loan", loanChoice);
+		JTextField amount = new JTextField();
+		JTextField reference = new JTextField();
+		JComboBox<PaymentMethod> method = new JComboBox<>(PaymentMethod.values());
+		JLabel outstanding = new JLabel();
+		loanChoice.addActionListener(e -> outstanding.setText(String.format("MWK %.2f",
+				availableLoans.get(loanChoice.getSelectedIndex()).getOutstandingBalance())));
+		addField(form, "Amount", amount);
+		addField(form, "Outstanding balance", outstanding);
+		addField(form, "Method", method);
+		addField(form, "Reference", reference);
+		outstanding.setText(String.format("MWK %.2f",
+				availableLoans.get(loanChoice.getSelectedIndex()).getOutstandingBalance()));
+		if (JOptionPane.showConfirmDialog(this, form, "Record Repayment",
+				JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+		Loan loan = availableLoans.get(loanChoice.getSelectedIndex());
 		try {
-			Loan loan = loanManager.findLoan(loanId.trim());
-			JTextField amount = new JTextField();
-			JTextField reference = new JTextField();
-			JComboBox<PaymentMethod> method = new JComboBox<>(PaymentMethod.values());
-			JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
-			addField(form, "Outstanding balance",
-					new JLabel(String.format("MWK %.2f", loan.getOutstandingBalance())));
-			addField(form, "Amount", amount);
-			addField(form, "Method", method);
-			addField(form, "Reference", reference);
-			if (JOptionPane.showConfirmDialog(this, form, "Record Repayment",
-					JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-				Repayment payment = paymentManager.recordRepayment(loanId.trim(),
-						Double.parseDouble(amount.getText()),
-						(PaymentMethod) method.getSelectedItem(), reference.getText());
-				updateAllTables();
-				updateSchedule(loanId.trim());
-				JOptionPane.showMessageDialog(this,
-						"Payment " + payment.getPaymentId() + " recorded.");
-			}
+			Repayment payment = paymentManager.recordRepayment(loan.getLoanId(),
+					Double.parseDouble(amount.getText()),
+					(PaymentMethod) method.getSelectedItem(), reference.getText());
+			updateAllTables();
+			updateSchedule(loan.getLoanId());
+			JOptionPane.showMessageDialog(this,
+					"Payment " + payment.getPaymentId() + " recorded for "
+							+ loan.getCustomer().getFirstName() + " "
+							+ loan.getCustomer().getLastName() + ".");
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Repayment Error",
 					JOptionPane.ERROR_MESSAGE);
@@ -578,9 +716,11 @@ public class LoanManagementFrame extends JFrame {
 		} else {
 			StringBuilder builder = new StringBuilder();
 			for (Loan loan : overdue) {
-				builder.append(loan.getLoanId()).append(" - ")
-						.append(loan.getCustomer().getCustomerId()).append(" - MWK ")
+				builder.append(loan.getCustomer().getFirstName()).append(" ")
+						.append(loan.getCustomer().getLastName()).append(" | ")
+						.append(loan.getLoanType().getName()).append(" | MWK ")
 						.append(String.format("%.2f", loan.getOutstandingBalance()))
+						.append(" outstanding | Ref ").append(loan.getLoanId())
 						.append("\n");
 			}
 			message = builder.toString();
@@ -621,6 +761,69 @@ public class LoanManagementFrame extends JFrame {
 			}
 		}
 	}
+
+		private void showSettingsDialog() {
+			SystemSettings settings = loanManager.getSettings();
+			JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
+			JTextField affordability = new JTextField(String.valueOf(settings.getAffordabilityPercentage()));
+			JTextField maximumLoans = new JTextField(String.valueOf(settings.getMaximumActiveLoans()));
+			JTextField lateFee = new JTextField(String.valueOf(settings.getLateFeePercentage()));
+			JCheckBox enableLateFees = new JCheckBox("Enable late fees",
+					settings.isLateFeesEnabled());
+			addField(form, "Affordability ratio", affordability);
+			addField(form, "Maximum active loans", maximumLoans);
+			addField(form, "Late fee rate", lateFee);
+			addField(form, "Late fees", enableLateFees);
+			if (JOptionPane.showConfirmDialog(this, form, "System Settings",
+					JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+				try {
+					settings.setAffordabilityPercentage(Double.parseDouble(affordability.getText()));
+					settings.setMaximumActiveLoans(Integer.parseInt(maximumLoans.getText()));
+					settings.setLateFeePercentage(Double.parseDouble(lateFee.getText()));
+					settings.setLateFeesEnabled(enableLateFees.isSelected());
+					JOptionPane.showMessageDialog(this, "Settings updated.");
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(this, e.getMessage(), "Settings Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+
+		private void showExportDialog() {
+			String[] options = {"Customers - CSV", "Loans - CSV", "Customers - PDF", "Loans - PDF"};
+			int choice = JOptionPane.showOptionDialog(this, "Choose a report to export",
+					"Export CSV", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+					null, options, options[0]);
+			if (choice < 0) return;
+			JFileChooser chooser = new JFileChooser();
+			String fileName = switch (choice) {
+				case 1 -> "loans.csv";
+				case 2 -> "customers.pdf";
+				case 3 -> "loans.pdf";
+				default -> "customers.csv";
+			};
+			chooser.setSelectedFile(new File(fileName));
+			if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+			try {
+				if (choice == 0) {
+					new CsvReportExporter().exportCustomers(chooser.getSelectedFile().toPath(),
+							customerManager.listCustomers());
+				} else if (choice == 1) {
+					new CsvReportExporter().exportLoans(chooser.getSelectedFile().toPath(),
+							loanManager.getLoans());
+				} else if (choice == 2) {
+					new PdfReportExporter().exportCustomers(chooser.getSelectedFile().getAbsolutePath(),
+							customerManager.listCustomers());
+				} else {
+					new PdfReportExporter().exportLoans(chooser.getSelectedFile().getAbsolutePath(),
+							loanManager.getLoans());
+				}
+				JOptionPane.showMessageDialog(this, "Report exported.");
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Export Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
 
 	private void deactivateSelected(JTable table, CustomerManager manager) {
 		if (table.getSelectedRow() < 0) {
