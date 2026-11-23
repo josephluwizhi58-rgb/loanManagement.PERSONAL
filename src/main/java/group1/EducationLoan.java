@@ -16,12 +16,6 @@ package group1;
 					
 				}
 			
-			public static void main(String[] args){
-				EducationLoan loan = new EducationLoan(500000,8,36);
-				loan.displayLoanDetails();
-				
-				System.out.println("Interest only: " + loan.calculateInterest());
-				System.out.println("Total Payable: " + loan.calculateTotalPayable());}
 			}
 
 

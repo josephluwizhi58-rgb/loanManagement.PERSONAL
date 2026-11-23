@@ -17,9 +17,16 @@ public class FilePersistenceManager {
 			List<LoanApplication> applications, List<Loan> loans,
 			List<Repayment> repayments) throws IOException {
 		PersistentState state = new PersistentState(customers, loanTypes, applications, loans, repayments);
+		Path temporary = Path.of(file.toString() + ".tmp");
 		try (ObjectOutputStream output = new ObjectOutputStream(
-				new FileOutputStream(file.toFile()))) {
+				new FileOutputStream(temporary.toFile()))) {
 			output.writeObject(state);
+		}
+		try {
+			Files.move(temporary, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+					java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+		} catch (java.nio.file.AtomicMoveNotSupportedException e) {
+			Files.move(temporary, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 

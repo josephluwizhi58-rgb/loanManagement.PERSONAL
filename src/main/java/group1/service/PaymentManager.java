@@ -56,6 +56,16 @@ public class PaymentManager {
 				remainingPayment -= applied;
 			}
 		}
+		double cumulativeDue = 0;
+		double cumulativePaid = 0;
+		for (RepaymentSchedule installment : schedule) {
+			cumulativeDue += installment.getAmountDue();
+			cumulativePaid += installment.getAmountPaid();
+			installment.setRemainingBalance(
+					Math.max(0, loan.getOutstandingBalance()
+							- Math.max(0, cumulativeDue - cumulativePaid)));
+			installment.refreshStatus(LocalDate.now());
+		}
 	}
 
 	public List<Repayment> getRepayments() {

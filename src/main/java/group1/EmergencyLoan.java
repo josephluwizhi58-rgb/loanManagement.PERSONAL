@@ -15,11 +15,5 @@ public class EmergencyLoan extends Loan{
 					
 				}
 			
-			public static void main(String[] args){
-				EmergencyLoan loan = new EmergencyLoan(500000,10,6);
-				loan.displayLoanDetails();
-				
-				System.out.println("Interest only: " + loan.calculateInterest());
-				System.out.println("Total Payable: " + loan.calculateTotalPayable());}
 			}
 

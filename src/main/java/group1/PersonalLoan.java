@@ -14,14 +14,6 @@ public class PersonalLoan extends Loan{
 			
 		}
 	
-	public static void main(String[] args) {
-	  PersonalLoan loan = new PersonalLoan(500000,15,12);
-			loan.displayLoanDetails();
-			
-			System.out.println("Interest only: " + loan.calculateInterest());
-			System.out.println("Total Payable: " + loan.calculateTotalPayable());
-		}
-	
 }
 	
 

@@ -14,12 +14,6 @@ public class BusinessLoan extends Loan {
 				
 			}
 		
-		public static void main(String[] args){
-			BusinessLoan loan = new BusinessLoan(500000,15,24);
-			loan.displayLoanDetails();
-			
-			System.out.println("Interest only: " + loan.calculateInterest());
-			System.out.println("Total Payable: " + loan.calculateTotalPayable());}
 		}
 		
 			

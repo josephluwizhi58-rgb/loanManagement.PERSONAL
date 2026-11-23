@@ -23,16 +23,37 @@ public class RepaymentSchedule implements Serializable {
 	}
 
 	public void applyPayment(double amount, LocalDate today) {
-		amountPaid += amount;
+		if (amount <= 0) {
+			throw new IllegalArgumentException("Schedule payment must be greater than zero");
+		}
+		double remainingDue = Math.max(0, amountDue - amountPaid);
+		double applied = Math.min(amount, remainingDue);
+		if (applied <= 0) {
+			return;
+		}
+		amountPaid = Math.round((amountPaid + applied) * 100.0) / 100.0;
 		if (amountPaid >= amountDue - 0.005) {
 			amountPaid = amountDue;
 			status = PaymentStatus.PAID;
 		} else if (amountPaid > 0) {
 			status = PaymentStatus.PARTIALLY_PAID;
 		}
-		remainingBalance = Math.max(0, remainingBalance - amount);
 		if (status != PaymentStatus.PAID && today.isAfter(dueDate)) {
 			status = PaymentStatus.OVERDUE;
+		}
+	}
+
+	public void setRemainingBalance(double remainingBalance) {
+		this.remainingBalance = Math.max(0, remainingBalance);
+	}
+
+	public void refreshStatus(LocalDate today) {
+		if (amountPaid >= amountDue - 0.005) {
+			status = PaymentStatus.PAID;
+		} else if (amountPaid > 0) {
+			status = today.isAfter(dueDate) ? PaymentStatus.OVERDUE : PaymentStatus.PARTIALLY_PAID;
+		} else {
+			status = today.isAfter(dueDate) ? PaymentStatus.OVERDUE : PaymentStatus.PENDING;
 		}
 	}
 

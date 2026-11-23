@@ -36,10 +36,10 @@ public abstract class Loan implements Serializable {
 
 	public Loan(String loanId, Customer customer, LoanType loanType, double principal,
 			int repaymentPeriod, LocalDate approvalDate, LocalDate startDate) {
-		validate(principal, loanType.getInterestRate(), repaymentPeriod);
 		if (customer == null || loanType == null) {
 			throw new IllegalArgumentException("Customer and loan type are required");
 		}
+		validate(principal, loanType.getInterestRate(), repaymentPeriod);
 		this.loanId = loanId;
 		this.customer = customer;
 		this.loanType = loanType;

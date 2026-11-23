@@ -15,11 +15,5 @@ public class AgriculturalLoan extends Loan{
 				
 			}
 		
-		public static void main(String[] args){
-			AgriculturalLoan loan = new AgriculturalLoan(500000,9,24);
-			loan.displayLoanDetails();
-			
-			System.out.println("Interest only: " + loan.calculateInterest());
-			System.out.println("Total Payable: " + loan.calculateTotalPayable());}
 		}
 
